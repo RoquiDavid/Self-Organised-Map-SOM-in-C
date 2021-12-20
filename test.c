@@ -3,9 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "data_manager.h"
 #include "function.c"
-#include "net.h"
 //Size of the data vector
 #define SIZE 4
 #define finale_nb_lines 150
@@ -279,26 +277,26 @@ printf("moy %f fff\n",data_moyenne);
 mean = 0;
 struct net SOM;
 // We can go up 4* more we multiply less we zoom in
-SOM.nb_node = 5*sqrt(finale_nb_lines)*2;
+SOM.nb_node = 5*sqrt(finale_nb_lines)*1;
 
 //We assotiate the nb of col and line
-SOM.nb_colonne = round(sqrt(SOM.nb_node));
-SOM.nb_ligne = round(sqrt(SOM.nb_node));
+SOM.nb_colonne = 6;
+SOM.nb_ligne = 10;
 
 SOM.best_unit = (bmu *)calloc(1,sizeof(bmu));
 
-SOM.nb_iteration = 1;
+SOM.nb_iteration = 2000;
 SOM.alpha = 0.7;
 SOM.taille_voisinnage = SOM.nb_node/2;
 
 
 //Initialisaiton of the map
-SOM.map = (struct node **)calloc(SOM.nb_colonne, sizeof(struct node *));
+SOM.map = (struct node **)calloc(SOM.nb_colonne,sizeof(struct node *));
 
 
 for(int i = 0; i < SOM.nb_ligne; i++)
 {
-    SOM.map[i] = (struct node *)calloc(SOM.nb_ligne, sizeof(struct node));
+     SOM.map[i] = (struct node *)calloc(SOM.nb_ligne,sizeof(struct node *));
 
 }
 
@@ -311,27 +309,32 @@ int cpt = 0;
 
 
 
-
+printf("ok");
 for(int i = 0; i < SOM.nb_colonne; i++){
     
     for(int j = 0; j < SOM.nb_ligne; j++){
         //printf("ok");
         
         //Initialize the memory vector
+        printf("ok");
         SOM.map[i][j].weight = (double *)calloc(SIZE, sizeof(double));
+        printf("ok1");
         vec_random(data_moyenne, SOM.map[i][j].weight, SIZE);
         //Normlize the memory vector
+        printf("ok2");
         normalize(SOM.map[i][j].weight,SIZE);
 
-        //printf("moy %f fff\n",data_moyenne);
+        printf("ok3");
         SOM.map[i][j].act;
+        printf("ok4");
         SOM.map[i][j].id = cpt;
+        printf("ok5");
         cpt ++;
         
     }
     
     
-}
+}printf("moy %f fff\n",data_moyenne);
 
 
 
@@ -388,21 +391,31 @@ head->next = NULL;
 //We iteration nb_iteration times
 //We swap the data array
 
-for(int i = 0; i < finale_nb_lines; i++){
-    swap(matrix_data + (rand() % finale_nb_lines), matrix_data + (rand() % finale_nb_lines));
-}
+
 for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
-    
+    for(int i = 0; i < finale_nb_lines; i++){
+        swap(matrix_data + (rand() % finale_nb_lines), matrix_data + (rand() % finale_nb_lines));
+    }
     if(epoch>500){
         SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
     }
 
-    /*
     if(epoch>500 && epoch <502){
-        SOM.taille_voisinnage = 0.20 * SOM.taille_voisinnage;
+        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
+        SOM.taille_voisinnage =32;
+    }
+
+    if(epoch>1000 && epoch <1002){
+        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
+        SOM.taille_voisinnage =16;
+    }
+
+    if(epoch>1500 && epoch <1502){
+        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
+        SOM.taille_voisinnage = 8;
     }
     
-    
+    /*
     if(epoch>1000 && epoch < 1500){
         SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
         SOM.taille_voisinnage = 0.20 * SOM.taille_voisinnage;
@@ -480,28 +493,18 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
             //We spread until reach 50% of the total node
             //TODO:
             //  Faire le bon parcours des voisins
-            while(cpt_node < SOM.taille_voisinnage){
                 col_bmu = current_node->c;
                 line_bmu = current_node->l;
-                printf("vois de: %d %d : ",current_node->c,current_node->l);
-                for(int col = current_node->c; col < SOM.nb_colonne; col++){
-                    
-
-                    for(int line = current_node->l; line < SOM.nb_ligne; line++){
-                        //We spread the data of the bmu to his neightboor
+                //printf("vois de: %d %d : ",current_node->c,current_node->l);
+                spread(SOM, col_bmu, line_bmu, SOM.nb_colonne,SOM.nb_ligne,(matrix_data[num_data_ligne].v), SIZE);
+                
                         //By thie formula
-                        printf("%d %d\n", col, line);
-                        for(int i = 0; i< SIZE; i ++){
-                            //SOM.map[col][line].weight[i] = SOM.map[col][line].weight[i] * SOM.alpha * dist_eucli(matrix_data[num_data_ligne].v, SOM.map[col][line].weight, SIZE);
-                            //SOM.map[col][line].weight[i] = SOM.map[col][line].weight[i] * SOM.alpha * abs((SOM.map[col][line].weight[i] - matrix_data[num_data_ligne].v[i]));
-                            //printf("%f ",(double)abs((SOM.map[col][line].weight[i] - matrix_data[num_data_ligne].v[i])));
-                        }
-                        
-                    cpt_node++;
-                    }
-                }    
+                        //printf("%d %d\n", col, line);
+                        //SOM.map[col][line].weight[i] = SOM.map[col][line].weight[i] * SOM.alpha * dist_eucli(matrix_data[num_data_ligne].v, SOM.map[col][line].weight, SIZE);
+                        //SOM.map[col][line].weight[i] = SOM.map[col][line].weight[i] * SOM.alpha * abs((SOM.map[col][line].weight[i] - matrix_data[num_data_ligne].v[i]));
+                        //printf("%f ",(double)abs((SOM.map[col][line].weight[i] - matrix_data[num_data_ligne].v[i])));
 
-            }
+            
             current_node= current_node->next;
             cpt_node = 0;
         }
@@ -514,7 +517,7 @@ for (int k=0; k<3; k++) {
             printf("ok");
         }
     }
-/*
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //                            NETWORK TESTING PART                           //
@@ -552,8 +555,21 @@ for(int i = 0; i < finale_nb_lines; i++){
             }
         }
     }
+    printf("\n");
     //printf("min: %f\n", min);
-    
+    for(int i = 0; i < SOM.nb_colonne; i ++){
+
+        for(int j = 0; j < SOM.nb_ligne; j++){
+            
+            printf("%c",SOM.map[i][j].label);
+
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    printf("nb node: %d", SOM.nb_node);
+
     if(head == NULL){
         printf("BMU linked list is empty");
     }
@@ -581,17 +597,7 @@ for(int i = 0; i < finale_nb_lines; i++){
 
 
 
-/*
-for(int i = 0; i < SOM.nb_colonne; i ++){
 
-    for(int j = 0; j < SOM.nb_ligne; j++){
-        
-        printf("%c",SOM.map[i][j].label);
-
-    }
-    printf("\n");
-
-}*/
 
 
     

@@ -5,23 +5,28 @@
 //#include "function.c"
 //#include "net.h"
 
-void modif(int **array, int col, int ligne, int max)
+void modif(int **array, int col, int ligne, int max, int max_col, int max_ligne, int value)
 {
 
     int cpt = 0;
     int perim = 1;
     int limit = 3;
-    while (cpt < max)
+    int nb_ite = round(max/4);
+    int ite = 0;
+    while (cpt < max || ite != nb_ite)
     {
         // TOP
         for (int i = col + 1 * perim; i >= col - 1 * perim; i--)
         {
+            if(i<0 || i>=max_col || ligne - 1 * perim <0){
+                printf("ok2: %d", i);
+                continue;
+            }
             if (cpt >= max)
-            {
+            {   
                 break;
             }
-
-            array[ligne - 1 * perim][i] = 2;
+            array[ligne - 1 * perim][i] = value;
 
             cpt++;
         }
@@ -29,41 +34,50 @@ void modif(int **array, int col, int ligne, int max)
          // LEFT
         for (int i = ligne - 1 * perim+1 ; i <= ligne + 1 * perim; i++)
         {
+            if(i<0 || i>=max_ligne || col - 1 * perim < 0){
+                printf("ok3");
+                continue;
+            }
             if (cpt >= max)
             {
                 break;
             }
-
-            array[i][col - 1 * perim] = 4;
+            array[i][col - 1 * perim] = value;
 
             cpt++;
         }
         // BOT
         for (int i = col - 1 * perim + 1; i <= col + 1 * perim; i++)
         {
+            if(i<0 || i>=max_col || ligne + 1 * perim >= max_ligne){
+                printf("ok4");
+                continue;
+            }
             if (cpt >= max)
             {
                 break;
             }
-            array[ligne + 1 * perim][i] = 3;
+            array[ligne + 1 * perim][i] = value;
 
             cpt++;
         }
-       
+
         //RIGHT
         for (int i = ligne + 1 * perim - 1; i >= ligne - 1 * perim; i--)
         {
-
+            if(i<0 || i>=max_ligne || col + 1 * perim >= max_col){
+                printf("ok5");
+                continue;
+            }
             if (cpt >= max)
             {
                 break;
             }
-
-            array[i][col + 1 * perim] = 5;
+            array[i][col + 1 * perim] = value;
 
             cpt++;
         }
-
+        ite++;
         perim++;
     }
 }
@@ -96,7 +110,7 @@ int main(int argc, char *argv[], char *env[])
         printf("\n");
     }
 
-    modif(i, 6, 6, 22);
+    modif(i, 6, 6, 90, 10,10, 9);
 
     printf("\n");
     for (int l = 0; l < 10; l++)

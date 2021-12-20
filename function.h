@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "net.h"
 
-
-
+#include "data_manager.h"
 //Function use to calculate euclidian distance
 double dist_eucli(double *vector1, double *vector2, int size);
 
@@ -26,6 +26,12 @@ double max(double *vector_data);
 //Function tht generate random vector
 void vec_random(double moyenne, double *weight, int size);
 
+//Function that swap two array index
+void swap(vec *index1, vec *index2);
+
 //Function that generate random double
 double randomRange(double min, double max);
+
+//Fonction that allow to spread the vector thought the nearest neightbors
+void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *data, int data_size);
 

@@ -118,3 +118,91 @@ void swap(vec *index1, vec *index2){
     *index2 = temp;
 }
 
+
+//Fonction that allow to spread the vector thought the nearest neightbors
+void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *data, int data_size)
+{
+
+    int cpt = 0;
+    int perim = 1;
+    int limit = 3;
+    int nb_ite = round(reseau.taille_voisinnage/4);
+    int ite = 0;
+    while (cpt < reseau.taille_voisinnage || ite != nb_ite)
+    {
+        // TOP
+        for (int i = col + 1 * perim; i >= col - 1 * perim; i--)
+        {
+            if(i<0 || i>=max_col || ligne - 1 * perim <0){
+                //printf("ok2: %d", i);
+                continue;
+            }
+            if (cpt >= reseau.taille_voisinnage)
+            {   
+                break;
+            }
+            for(int j = 0; j < data_size; j++){
+                reseau.map[col][ligne].weight[j] * reseau.alpha * abs((reseau.map[col][ligne].weight[j] - data[j]));
+            }
+
+            cpt++;
+        }
+
+         // LEFT
+        for (int i = ligne - 1 * perim+1 ; i <= ligne + 1 * perim; i++)
+        {
+            if(i<0 || i>=max_ligne || col - 1 * perim < 0){
+                //printf("ok3");
+                continue;
+            }
+            if (cpt >= reseau.taille_voisinnage)
+            {
+                break;
+            }
+
+            for(int j = 0; j < data_size; j++){
+                reseau.map[col][ligne].weight[j] * reseau.alpha * abs((reseau.map[col][ligne].weight[j] - data[j]));
+            }
+
+            cpt++;
+        }
+        // BOT
+        for (int i = col - 1 * perim + 1; i <= col + 1 * perim; i++)
+        {
+            if(i<0 || i>=max_col || ligne + 1 * perim >= max_ligne){
+                //printf("ok4");
+                continue;
+            }
+            if (cpt >= reseau.taille_voisinnage)
+            {
+                break;
+            }
+            
+            for(int j = 0; j < data_size; j++){
+                reseau.map[col][ligne].weight[j] * reseau.alpha * abs((reseau.map[col][ligne].weight[j] - data[j]));
+            }
+            cpt++;
+        }
+
+        //RIGHT
+        for (int i = ligne + 1 * perim - 1; i >= ligne - 1 * perim; i--)
+        {
+            if(i<0 || i>=max_ligne || col + 1 * perim >= max_col){
+                //printf("ok5");
+                continue;
+            }
+            if (cpt >= reseau.taille_voisinnage)
+            {
+                break;
+            }
+
+            for(int j = 0; j < data_size; j++){
+                reseau.map[col][ligne].weight[j] * reseau.alpha * abs((reseau.map[col][ligne].weight[j] - data[j]));
+            }
+            cpt++;
+        }
+        ite++;
+        //printf("ite: %d nb_ite: %d", ite, nb_ite);
+        perim++;
+    }
+}
