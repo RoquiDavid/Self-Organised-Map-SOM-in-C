@@ -5,86 +5,61 @@
 //#include "function.c"
 //#include "net.h"
 
-void modif(int **array, int col, int ligne, int max, int max_col, int max_ligne, int value)
-{
+//Function that allow to find the number of occurence of a string
+//in an array
+char *find_frequency(char **string_array, char **string_to_find, int size_string_array, int size_string_to_find){
+    int *freq = (int *)calloc(size_string_to_find,sizeof(int));
 
-    int cpt = 0;
-    int perim = 1;
-    int limit = 3;
-    int nb_ite = round(max/4);
-    int ite = 0;
-    while (cpt < max || ite != nb_ite)
-    {
-        // TOP
-        for (int i = col + 1 * perim; i >= col - 1 * perim; i--)
-        {
-            if(i<0 || i>=max_col || ligne - 1 * perim <0){
-                printf("ok2: %d", i);
-                continue;
-            }
-            if (cpt >= max)
-            {   
-                break;
-            }
-            array[ligne - 1 * perim][i] = value;
+    
 
-            cpt++;
+    int index_max;
+
+    //Compare the string with each elements array
+    for(int i = 0; i < size_string_to_find; i++){
+
+            for(int j = 0; j < size_string_array; j ++){
+                if(!strcmp(string_to_find[i],string_array[j])){
+                    freq[i]+=1;
+                }
         }
-
-         // LEFT
-        for (int i = ligne - 1 * perim+1 ; i <= ligne + 1 * perim; i++)
-        {
-            if(i<0 || i>=max_ligne || col - 1 * perim < 0){
-                printf("ok3");
-                continue;
-            }
-            if (cpt >= max)
-            {
-                break;
-            }
-            array[i][col - 1 * perim] = value;
-
-            cpt++;
-        }
-        // BOT
-        for (int i = col - 1 * perim + 1; i <= col + 1 * perim; i++)
-        {
-            if(i<0 || i>=max_col || ligne + 1 * perim >= max_ligne){
-                printf("ok4");
-                continue;
-            }
-            if (cpt >= max)
-            {
-                break;
-            }
-            array[ligne + 1 * perim][i] = value;
-
-            cpt++;
-        }
-
-        //RIGHT
-        for (int i = ligne + 1 * perim - 1; i >= ligne - 1 * perim; i--)
-        {
-            if(i<0 || i>=max_ligne || col + 1 * perim >= max_col){
-                printf("ok5");
-                continue;
-            }
-            if (cpt >= max)
-            {
-                break;
-            }
-            array[i][col + 1 * perim] = value;
-
-            cpt++;
-        }
-        ite++;
-        perim++;
     }
+    int max = freq[0];
+    //Get the string which have the most occurence in the array
+    for(int i = 0; i < size_string_to_find; i++){
+
+        if(freq[i]>max){
+            max = freq[i];
+            index_max = i;
+        }
+    }
+    
+    return string_to_find[index_max];
 }
 
 int main(int argc, char *argv[], char *env[])
 {
 
+char **orderedIds;
+
+orderedIds = malloc(10 * sizeof(char*));
+for (int i = 0; i < 10; i++){
+    orderedIds[i] = malloc((250+1) * sizeof(char)); // yeah, I know sizeof(char)
+    if(i<7){
+        orderedIds[i] = "salut";
+    }else{
+        orderedIds[i] = "ça va ?";
+    }
+}
+
+char **test;
+
+test = malloc(2 * sizeof(char*));
+test[0] = "salut";
+test[1] = "ça va ?";
+
+printf("freq %s\n",find_frequency(orderedIds,test,10,2));
+
+    /*
     int **i = (int **)malloc(sizeof(int *) * 10);
 
     for (int k = 0; k < 10; k++)

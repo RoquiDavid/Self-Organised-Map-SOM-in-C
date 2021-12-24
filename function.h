@@ -35,3 +35,7 @@ double randomRange(double min, double max);
 //Fonction that allow to spread the vector thought the nearest neightbors
 void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *data, int data_size);
 
+//Function that allow to find the number of occurence of a string
+//in an array
+char *find_frequency(char **string_array, char **string_to_find, int size_string_array, int size_string_to_find);
+

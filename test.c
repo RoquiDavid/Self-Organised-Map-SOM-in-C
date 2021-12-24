@@ -73,8 +73,8 @@ int main (int argc, char *argv[], char *env[]){
     char tmp [256];
 
     
-    int i = 0;
-    int k = 0;
+    int indice = 0;
+    int k_pos = 0;
     
     
     while (ret = fscanf(fp," %s ", line)) {
@@ -91,36 +91,36 @@ int main (int argc, char *argv[], char *env[]){
         //temporary vec
 
         strcpy(tmp, strtok(line,","));
-        sepal_length[i] = atof(tmp);
+        sepal_length[indice] = atof(tmp);
 
-        matrix_data[i].v[k] = sepal_length[i];
-        k++;
+        matrix_data[indice].v[k_pos] = sepal_length[indice];
+        k_pos++;
         strcpy(tmp, strtok( NULL, "," ));
-        sepal_width[i] = atof(tmp);
+        sepal_width[indice] = atof(tmp);
 
-        matrix_data[i].v[k] = sepal_width[i];
-        k++;
-
-        strcpy(tmp, strtok( NULL, "," ));
-        petal_length[i] = atof(tmp);
-
-        matrix_data[i].v[k] = petal_length[i];
-        k++;
+        matrix_data[indice].v[k_pos] = sepal_width[indice];
+        k_pos++;
 
         strcpy(tmp, strtok( NULL, "," ));
-        petal_width[i] = atof(tmp);
+        petal_length[indice] = atof(tmp);
 
-        matrix_data[i].v[k] = petal_width[i];
-        k++;
+        matrix_data[indice].v[k_pos] = petal_length[indice];
+        k_pos++;
+
+        strcpy(tmp, strtok( NULL, "," ));
+        petal_width[indice] = atof(tmp);
+
+        matrix_data[indice].v[k_pos] = petal_width[indice];
+        k_pos++;
         //Change the delimiter to "\n" for the end of the line 
         strcpy(tmp, strtok( NULL, "\n" ));
-        strcpy(class_flower[i], tmp);
+        strcpy(class_flower[indice], tmp);
         
 
-        tmp_vector[0] = sepal_length[i];
-        tmp_vector[1] = sepal_width[i];
-        tmp_vector[2] = petal_length[i];
-        tmp_vector[3] =  petal_width[i];
+        tmp_vector[0] = sepal_length[indice];
+        tmp_vector[1] = sepal_width[indice];
+        tmp_vector[2] = petal_length[indice];
+        tmp_vector[3] =  petal_width[indice];
 
         /*
         printf("before norm: \n");
@@ -136,14 +136,14 @@ int main (int argc, char *argv[], char *env[]){
 
         */
         
-        matrix_data[i].norme = normalizebis(tmp_vector,sizeof(tmp_vector)/sizeof(tmp_vector[0]));
-        matrix_data[i].etiquette = class_flower[i];
+        matrix_data[indice].norme = normalizebis(tmp_vector,sizeof(tmp_vector)/sizeof(tmp_vector[0]));
+        matrix_data[indice].etiquette = class_flower[indice];
         //printf("%d: %s\n", i,class_flower[i]);
         
         
         //printf("%f, %f, %f, %f, %s\n", sepal_length[i], sepal_width[i], petal_length[i], petal_width[i], class_flower[i]);
-        k = 0;
-        i++;
+        k_pos = 0;
+        indice++;
     }
     
     
@@ -153,6 +153,7 @@ int main (int argc, char *argv[], char *env[]){
         printf("%s\n", matrix_data[i].etiquette);
     }
     
+
     /*
     for( int i = 0; i < finale_nb_lines; i ++){
         for(int j = 0; j < SIZE; j ++){
@@ -212,7 +213,9 @@ for (int k=0; k<finale_nb_lines; k++) {
         printf("%f\n",sepal_width[k]);
 }
 */
+
 double mean = 0;
+
     for(int i = 0; i < finale_nb_lines; i ++){
         mean += petal_length[i];   
     }
@@ -261,19 +264,37 @@ printf("moyenne_sepal_length: %f \n",moyenne_sepal_length);
 printf("moyenne_sepal_width: %f \n",moyenne_sepal_width);
 printf("moyenne_petal_length: %f \n",moyenne_petal_length);
 printf("moyenne_petal_width: %f \n",moyenne_petal_width);
+double *vec_moyenne = (double *)calloc(SIZE, sizeof(double));
+vec_moyenne[0] = moyenne_sepal_length;
+vec_moyenne[1] = moyenne_sepal_width;
+vec_moyenne[2] = moyenne_petal_length;
+vec_moyenne[3] = moyenne_petal_width;
+//double vec_moyenne[SIZE] = {moyenne_sepal_length, moyenne_sepal_width, moyenne_petal_length, moyenne_petal_width};
 
 
-double vec_moyenne[SIZE] = {moyenne_sepal_length, moyenne_sepal_width, moyenne_petal_length, moyenne_petal_width};
-
-
+mean += moyenne_sepal_length;
+mean += moyenne_sepal_width;
+mean += moyenne_petal_length;
+mean += moyenne_petal_width;
 
 //double data_moyenne = moyenne(vec_moyenne, finale_nb_lines);
-  for(int i = 0; i < SIZE; i ++){
-        mean += vec_moyenne[i];   
+    /*
+    //////////////////////////////////////////////////////////////////* CODE A PROBLEMES !!!!////////////////////////////////////////////////////////////////////////
+    for(int i = 0; i < SIZE; i ++){
+        mean += vec_moyenne[i];  
+        printf("%lf ",vec_moyenne[i]); 
     }
+        //////////////////////////////////////////////////////////////////* CODE A PROBLEMES !!!!////////////////////////////////////////////////////////////////////////
+    */
+    
+
+    //printf("\n");
+    //printf("\n%lf\n",mean);
     mean = mean/finale_nb_lines;
 double data_moyenne = mean;
 printf("moy %f fff\n",data_moyenne);
+
+
 mean = 0;
 struct net SOM;
 // We can go up 4* more we multiply less we zoom in
@@ -286,65 +307,120 @@ SOM.nb_ligne = 10;
 SOM.best_unit = (bmu *)calloc(1,sizeof(bmu));
 
 SOM.nb_iteration = 2000;
-SOM.alpha = 0.7;
-SOM.taille_voisinnage = SOM.nb_node/2;
+
+SOM.taille_voisinnage = round(0.5 * SOM.nb_node);
 
 
 //Initialisaiton of the map
-SOM.map = (struct node **)calloc(SOM.nb_colonne,sizeof(struct node *));
+SOM.map = ( node **)calloc(SOM.nb_colonne,sizeof( node *));
 
 
-for(int i = 0; i < SOM.nb_ligne; i++)
+
+for(int i = 0; i < SOM.nb_colonne; i++)
 {
-     SOM.map[i] = (struct node *)calloc(SOM.nb_ligne,sizeof(struct node *));
+     SOM.map[i] = ( node *)calloc(SOM.nb_ligne,sizeof( node ));
+     if(SOM.map[i]){
+            printf("ok");
+        }
+        else{
+            printf("null");
+        }
 
 }
-
 
 printf("nb_col: %d\n", SOM.nb_colonne);
 printf("nb_ligne: %d\n", SOM.nb_ligne);
 
+
+
 //We initialise each node of the network
 int cpt = 0;
+//Normalize data
+for( int i = 0; i < finale_nb_lines; i ++){
+    normalize(matrix_data[i].v,SIZE);
+    
+}
 
 
 
-printf("ok");
+
 for(int i = 0; i < SOM.nb_colonne; i++){
     
     for(int j = 0; j < SOM.nb_ligne; j++){
-        //printf("ok");
-        
+
+        //printf("[%d][%d]",i,j);
         //Initialize the memory vector
-        printf("ok");
+        //printf("ok");
         SOM.map[i][j].weight = (double *)calloc(SIZE, sizeof(double));
-        printf("ok1");
-        vec_random(data_moyenne, SOM.map[i][j].weight, SIZE);
-        //Normlize the memory vector
-        printf("ok2");
-        normalize(SOM.map[i][j].weight,SIZE);
-
-        printf("ok3");
-        SOM.map[i][j].act;
-        printf("ok4");
-        SOM.map[i][j].id = cpt;
-        printf("ok5");
-        cpt ++;
+        //printf("ok1");
         
+        vec_random(data_moyenne, SOM.map[i][j].weight, SIZE);
+        
+        //Normlize the memory vector
+        //printf("ok2");
+        normalize(SOM.map[i][j].weight,SIZE);
+        
+        //for(int k = 0; k < SIZE; k ++){
+            //printf("%lf ", SOM.map[i][j].weight[k]);
+        //}
+        //printf("\n");
+        SOM.map[i][j].act = 0;
+        
+        //printf("ok4");
+        SOM.map[i][j].id = cpt;
+        //Initialize the stats array
+        SOM.map[i][j].stats = (char **)calloc(finale_nb_lines, sizeof(char *));
+        /*
+        for(int k = 0; k < finale_nb_lines; k ++){
+            SOM.map[i][j].stats[k] = (char *)calloc(250, sizeof(char ));
+        }*/
+        //printf("ok5");
+        cpt ++;
+
     }
-    
-    
-}printf("moy %f fff\n",data_moyenne);
-
-
-
-/*
-for( int i = 0; i < finale_nb_lines; i ++){
-    for(int j = 0; j < SIZE; j ++){
-        normalize(matrix_data[i].v,SIZE);
-    }
-    printf("\n");
 }
+
+
+
+    
+    /*
+    for( int num_data_ligne = 0; num_data_ligne < finale_nb_lines; num_data_ligne ++){
+        normalize(matrix_data[num_data_ligne].v, SIZE);
+    }*/
+    
+   /*
+    double dist = 0;
+    for( int num_data_ligne = 0; num_data_ligne < finale_nb_lines; num_data_ligne ++){
+
+
+        for(int num_col = 0; num_col < SOM.nb_colonne; num_col ++){
+            
+            for(int num_ligne = 0; num_ligne < SOM.nb_ligne; num_ligne ++){
+
+                dist = 0;
+                for(int i = 0; i < SIZE; i ++){
+                    //printf("%lf ",sqrt(pow(matrix_data[num_data_ligne].v[i]-SOM.map[num_col][num_ligne].weight[i],2)));
+                    //printf("%lf", SOM.map[num_col][num_ligne].weight[i]);
+                }
+                //printf("dist: %lf sqrt: %lf", dist, sqrt(dist));
+                //SOM.map[num_col][num_ligne].act = 2;
+                //printf("SOM.map[%d][%d] ", num_col, num_ligne);
+                //printf("%lf, %lf ",SOM.map[num_col][num_ligne].act, dist_eucli(matrix_data[num_data_ligne].v, SOM.map[num_col][num_ligne].weight, SIZE));
+                //SOM.map[num_col][num_ligne].act = dist_eucli(matrix_data[num_data_ligne].v, SOM.map[num_col][num_ligne].weight, SIZE);
+            }
+            //printf("\n");
+        }
+    
+    //normalize(matrix_data[i].v, SIZE);
+
+    /*
+    for(int j = 0; j < SIZE; j++){
+        printf("%lf ", matrix_data[i].v[j]);
+    }
+    */
+    //}
+
+
 
 
 for( int i = 0; i < finale_nb_lines; i ++){
@@ -353,26 +429,33 @@ for( int i = 0; i < finale_nb_lines; i ++){
     }
     printf("\n");
 }
-*/
 
-for( int i = 0; i < SOM.nb_colonne; i ++){
-    for(int j = 0; j < SOM.nb_ligne; j ++){
-        for(int k = 0; k < SIZE; k++){
-            printf("%f ",SOM.map[i][j].weight[k]);
-            //printf("SOM[%d][%d][%d] ",i,j,k);
-        }
-        printf("\n");
-        
-    }
-}
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //                          NETWORK TRAINING PART                            //
 ///////////////////////////////////////////////////////////////////////////////
 
+/*
+for( int i = 0; i < SOM.nb_colonne; i ++){
+
+    for(int j = 0; j < SOM.nb_ligne; j ++){
+        
+        for(int k = 0; k < SIZE; k++){
+            //printf("%f ",SOM.map[i][j].weight[k]);
+            printf("SOM[%d][%d][%d] ",i,j,k);
+        }
+        printf("\n");
+        
+    }
+}
+*/
+
+
 //State of the iteration
-int epoch;
+int epoch = 0;
 //The minimum of the euclidian distance thought the net node
 double min = INFINITY;
 
@@ -391,42 +474,34 @@ head->next = NULL;
 //We iteration nb_iteration times
 //We swap the data array
 
-
+SOM.alpha = 0.8;
+double alpha_init = 0.8;
 for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
     for(int i = 0; i < finale_nb_lines; i++){
         swap(matrix_data + (rand() % finale_nb_lines), matrix_data + (rand() % finale_nb_lines));
     }
-    if(epoch>500){
-        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
+    SOM.alpha = alpha_init * (1-((float)epoch/(float)SOM.nb_iteration));
+    
+    //printf("%d", SOM.taille_voisinnage);
+    if(epoch>500 && epoch < 1000){
+        alpha_init = 0.09;
+        SOM.taille_voisinnage = round(0.30 * SOM.nb_node);
     }
-
-    if(epoch>500 && epoch <502){
-        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
-        SOM.taille_voisinnage =32;
+    if(epoch>=1000 && epoch <1500){
+        
+        SOM.taille_voisinnage = round(0.20 * SOM.nb_node);
     }
-
-    if(epoch>1000 && epoch <1002){
-        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
-        SOM.taille_voisinnage =16;
-    }
-
-    if(epoch>1500 && epoch <1502){
-        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
+    if(epoch>=1500 && epoch <2000){
+      
+        
         SOM.taille_voisinnage = 8;
     }
     
-    /*
-    if(epoch>1000 && epoch < 1500){
-        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
-        SOM.taille_voisinnage = 0.20 * SOM.taille_voisinnage;
-    }
-
-    if(epoch>1500 && epoch < 2000){
-        SOM.alpha = SOM.alpha * (1-(epoch/SOM.nb_iteration));
-        SOM.taille_voisinnage = 0.10 * SOM.taille_voisinnage;
-    }
     
-    */
+    //printf("%lf", SOM.alpha );
+    
+    
+    
     
     
     // For each data line we calculate the euclidian distance tought all the net node
@@ -437,7 +512,8 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
             
             for(int num_ligne = 0; num_ligne < SOM.nb_ligne; num_ligne ++){
                 
-                //SOM.map[num_col][num_ligne].act = dist_eucli(matrix_data[num_data_ligne].v, SOM.map[num_col][num_ligne].weight, SIZE);
+               //printf("\n");
+                SOM.map[num_col][num_ligne].act = dist_eucli(matrix_data[num_data_ligne].v, SOM.map[num_col][num_ligne].weight, SIZE);
                 
                 //We check if we have find the minimum of the array 
                 //And actualize the bmu
@@ -469,6 +545,7 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
                     new_node->next= NULL;
                     current_node->next = new_node;
                     //printf("BMU2: c: %d, l: %d\n",head->c, head->l);
+                    //min = SOM.map[num_col][num_ligne].act;
                 }
                 
 
@@ -497,7 +574,7 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
                 line_bmu = current_node->l;
                 //printf("vois de: %d %d : ",current_node->c,current_node->l);
                 spread(SOM, col_bmu, line_bmu, SOM.nb_colonne,SOM.nb_ligne,(matrix_data[num_data_ligne].v), SIZE);
-                
+                //printf("col_bmu: %d    line_bmu: %d",col_bmu, line_bmu);
                         //By thie formula
                         //printf("%d %d\n", col, line);
                         //SOM.map[col][line].weight[i] = SOM.map[col][line].weight[i] * SOM.alpha * dist_eucli(matrix_data[num_data_ligne].v, SOM.map[col][line].weight, SIZE);
@@ -505,55 +582,81 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
                         //printf("%f ",(double)abs((SOM.map[col][line].weight[i] - matrix_data[num_data_ligne].v[i])));
 
             
-            current_node= current_node->next;
+            current_node = current_node->next;
             cpt_node = 0;
         }
         min = INFINITY;
     }
 
 }
-for (int k=0; k<3; k++) { 
-        for (int m=0; m<3; m++) { 
-            printf("ok");
-        }
-    }
+/*
+for( int i = 0; i < SOM.nb_colonne; i ++){
 
+    for(int j = 0; j < SOM.nb_ligne; j ++){
+        
+        for(int k = 0; k < SIZE; k++){
+            //printf("%f ",SOM.map[i][j].weight[k]);
+            printf("SOM[%d][%d][%d] ",i,j,k);
+        }
+        printf("\n");
+        
+    }
+}
+*/
+printf("12");
 
 ///////////////////////////////////////////////////////////////////////////////
 //                            NETWORK TESTING PART                           //
 ///////////////////////////////////////////////////////////////////////////////
-    
+min = INFINITY;
+
+//Array initialization ofr string to find
+char **unique_flower = (char **)calloc(3,sizeof(char *));
+unique_flower[0]= "Iris-versicolor";
+unique_flower[1]= "Iris-virginica";
+unique_flower[2]= "Iris-setosa";
+
 for(int i = 0; i < finale_nb_lines; i++){
         swap(matrix_data + (rand() % finale_nb_lines), matrix_data + (rand() % finale_nb_lines));
     }
 
     // For each data line we calculate the euclidian distance tought all the net node
     
-
-
-    for(int num_col = 0; num_col < SOM.nb_colonne; num_col ++){
-        
-        for(int num_ligne = 0; num_ligne < SOM.nb_ligne; num_ligne ++){
+    
+        for(int num_col = 0; num_col < SOM.nb_colonne; num_col ++){
             
-            for( int num_data_ligne = 0; num_data_ligne < finale_nb_lines; num_data_ligne ++){
+            
+            for(int num_ligne = 0; num_ligne < SOM.nb_ligne; num_ligne ++){
+                
+                for( int num_data_ligne = 0; num_data_ligne < finale_nb_lines; num_data_ligne ++){
 
-                if(dist_eucli(matrix_data[num_data_ligne].v, SOM.map[num_col][num_ligne].weight, SIZE) < min){
-
-                    if(!strcmp(matrix_data[num_data_ligne].etiquette, "Iris-setosa")){
-                        SOM.map[num_col][num_ligne].label = 'S';
-                    }
-                    if(!strcmp(matrix_data[num_data_ligne].etiquette, "Iris-virginica")){
-                        SOM.map[num_col][num_ligne].label = 'A';
-                    }
-                    if(!strcmp(matrix_data[num_data_ligne].etiquette, "Iris-versicolor")){
-                        SOM.map[num_col][num_ligne].label = 'O';
+        
+                    
+                    if(dist_eucli(SOM.map[num_col][num_ligne].weight, matrix_data[num_data_ligne].v, SIZE) < min){
+                        //printf("%lf ",dist_eucli(matrix_data[num_data_ligne].v, SOM.map[num_col][num_ligne].weight, SIZE));
+                        SOM.map[num_col][num_ligne].stats[num_data_ligne] = matrix_data[num_data_ligne].etiquette;
+                    
+                    
+                    min = dist_eucli(SOM.map[num_col][num_ligne].weight, matrix_data[num_data_ligne].v, SIZE);
                     }
                     
-                    min = SOM.map[num_col][num_ligne].act;
                 }
-                min = INFINITY;
-            }
+                
+                /* PROBLEME ICI !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+                if(!strcmp(find_frequency(SOM.map[num_col][num_ligne].stats, unique_flower, finale_nb_lines, 3), "Iris-versicolor")){
+                        SOM.map[num_col][num_ligne].label = 'O';
+                }
+                if(!strcmp(find_frequency(SOM.map[num_col][num_ligne].stats, unique_flower, finale_nb_lines, 3), "Iris-setosa")){
+                        SOM.map[num_col][num_ligne].label = 'S';
+                }
+                if(!strcmp(find_frequency(SOM.map[num_col][num_ligne].stats, unique_flower, finale_nb_lines, 3), "Iris-virginica")){
+                        SOM.map[num_col][num_ligne].label = 'A';
+                }
+                
+            min = INFINITY;
         }
+        
+        //printf("%s %d\n",matrix_data[num_data_ligne].etiquette, num_data_ligne);
     }
     printf("\n");
     //printf("min: %f\n", min);
@@ -566,7 +669,7 @@ for(int i = 0; i < finale_nb_lines; i++){
         }
         printf("\n");
     }
-    printf("\n");
+    //printf("\n");
 
     printf("nb node: %d", SOM.nb_node);
 
@@ -649,5 +752,5 @@ for(int i = 0; i < SIZE; i++){
     }
     */
     
-    return 0;
+   return 0;
 }

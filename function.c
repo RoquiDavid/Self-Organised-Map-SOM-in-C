@@ -8,9 +8,9 @@
 
 //Function use to calculate euclidian distance
 double dist_eucli(double *vector1, double *vector2, int size){
-    double dist = 1;
+    double dist = 0;
     for(int i = 0; i < size; i ++){
-        dist*= (vector2[i] - vector1[i]);
+        dist+= pow((vector2[i] - vector1[i]),2);
     }
     return sqrt(dist);
 
@@ -18,19 +18,9 @@ double dist_eucli(double *vector1, double *vector2, int size){
 
 //Function use to calcutate the norme of a vector and normalize him
 void normalize(double *vector_data, int size){
-    double sum = 0;
-    
-    //For each elements in the array we power him to 2 and add him to the sum
-    for (int i =0; i < size; i ++){
-        //printf("%f\n",array[i]);
-        sum += sum + (vector_data[i]*vector_data[i]);
-    }
-    //Square root the sum (the norm)
-    sum = sqrt(sum);
-    
     //Normalize the vector
     for (int i =0; i < size; i ++){
-        vector_data[i] = vector_data[i] / sum;
+        vector_data[i] = vector_data[i] / normalizebis(vector_data,size);
     }
 }
 
@@ -41,7 +31,7 @@ double normalizebis(double *vector_data, int size){
     //For each elements in the array we power him to 2 and add him to the sum
     for (int i =0; i < size; i ++){
         //printf("%f\n",array[i]);
-        sum += sum + (vector_data[i]*vector_data[i]);
+        sum = sum + pow(vector_data[i],2);
     }
     //Square root the sum (the norm)
     sum = sqrt(sum);
@@ -100,8 +90,8 @@ double randomRange(double min, double max)
 //Function tht generate random vector
 void vec_random(double moyenne, double *weight, int size)
 {
-    double min = moyenne -0.15;
-    double max = moyenne + 0.15;
+    double min = moyenne -0.05;
+    double max = moyenne + 0.05;
     double *vec_tmp;
     for (int i = 0; i < size; i++){
         weight[i] = randomRange(min, max);
@@ -126,9 +116,9 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
     int cpt = 0;
     int perim = 1;
     int limit = 3;
-    int nb_ite = round(reseau.taille_voisinnage/4);
+    //int nb_ite = round(reseau.taille_voisinnage/4); dans le while && ite < nb_ite
     int ite = 0;
-    while (cpt < reseau.taille_voisinnage || ite != nb_ite)
+    while (cpt < reseau.taille_voisinnage )
     {
         // TOP
         for (int i = col + 1 * perim; i >= col - 1 * perim; i--)
@@ -141,8 +131,9 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
             {   
                 break;
             }
-            for(int j = 0; j < data_size; j++){
-                reseau.map[col][ligne].weight[j] * reseau.alpha * abs((reseau.map[col][ligne].weight[j] - data[j]));
+            for(int j = 1; j < data_size; j++){
+                //printf("%lf",reseau.alpha * abs(reseau.map[i][ligne].weight[j] - data[j]));
+                reseau.map[i][ligne].weight[j] = reseau.map[i][ligne].weight[j] + reseau.alpha * fabs((reseau.map[i][ligne].weight[j] - data[j]));
             }
 
             cpt++;
@@ -161,7 +152,8 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
             }
 
             for(int j = 0; j < data_size; j++){
-                reseau.map[col][ligne].weight[j] * reseau.alpha * abs((reseau.map[col][ligne].weight[j] - data[j]));
+                //printf("%lf",reseau.alpha * abs(reseau.map[col][i].weight[j] - data[j]);
+                reseau.map[col][i].weight[j] = reseau.map[col][i].weight[j-1] + reseau.alpha * fabs((reseau.map[col][i].weight[j] - data[j]));
             }
 
             cpt++;
@@ -179,9 +171,10 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
             }
             
             for(int j = 0; j < data_size; j++){
-                reseau.map[col][ligne].weight[j] * reseau.alpha * abs((reseau.map[col][ligne].weight[j] - data[j]));
-            }
+               reseau.map[i][ligne].weight[j] = reseau.map[i][ligne].weight[j-1] + reseau.alpha * fabs((reseau.map[i][ligne].weight[j] - data[j]));
+               }
             cpt++;
+
         }
 
         //RIGHT
@@ -197,7 +190,7 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
             }
 
             for(int j = 0; j < data_size; j++){
-                reseau.map[col][ligne].weight[j] * reseau.alpha * abs((reseau.map[col][ligne].weight[j] - data[j]));
+                reseau.map[col][i].weight[j] = reseau.map[col][i].weight[j] + reseau.alpha * fabs((reseau.map[col][i].weight[j] - data[j]));
             }
             cpt++;
         }
@@ -205,4 +198,40 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
         //printf("ite: %d nb_ite: %d", ite, nb_ite);
         perim++;
     }
+    printf("alpha: %lf, voisin: %d \n", reseau.alpha, reseau.taille_voisinnage);
+}
+
+//Function that allow to find the number of occurence of a string
+//in an array
+
+char *find_frequency(char **string_array, char **string_to_find, int size_string_array, int size_string_to_find){
+    int *freq = (int *)calloc(size_string_to_find,sizeof(int));
+
+
+    int index_max = 0;
+    
+    //Compare the string with each elements array
+    for(int i = 0; i < size_string_to_find; i++){
+
+            for(int j = 0; j < size_string_array; j ++){
+                if(string_array[j]!= NULL){
+                    if(!strcmp(string_to_find[i],string_array[j])){
+                        freq[i]+=1;
+                    }
+                }
+                
+        }
+    }
+    
+    int max = freq[0];
+    //Get the string which have the most occurence in the array
+    for(int i = 0; i < size_string_to_find; i++){
+
+        if(freq[i]>max){
+            max = freq[i];
+            index_max = i;
+        }
+    }
+    
+    return string_to_find[index_max];
 }

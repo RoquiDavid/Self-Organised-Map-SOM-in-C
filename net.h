@@ -10,6 +10,7 @@ typedef struct node{
     double act; //Fonction d'activation (distance euclidienne)
     int id; //Nom de la données (classe de la données)
     char label;
+    char **stats;
 }node;
 
 //Structure d'une best matching unit
