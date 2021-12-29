@@ -485,8 +485,8 @@ head->next = NULL;
 //We iteration nb_iteration times
 //We swap the data array
 
-SOM.alpha = 0.8;
-double alpha_init = 0.8;
+SOM.alpha = 0.9;
+double alpha_init = 0.9;
 for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
     for(int i = 0; i < finale_nb_lines; i++){
         swap(matrix_data + (rand() % finale_nb_lines), matrix_data + (rand() % finale_nb_lines));
@@ -495,12 +495,12 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
     
     //printf("%d", SOM.taille_voisinnage);
     if(epoch>500 && epoch < 1000){
-        alpha_init = 0.09;
-        SOM.taille_voisinnage = round(0.30 * SOM.nb_node);
+        alpha_init = 0.08;
+        SOM.taille_voisinnage = round(0.40 * SOM.nb_node);
     }
     if(epoch>=1000 && epoch <1500){
         
-        SOM.taille_voisinnage = round(0.20 * SOM.nb_node);
+        SOM.taille_voisinnage = round(0.29 * SOM.nb_node);
     }
     if(epoch>=1500 && epoch <2000){
       
