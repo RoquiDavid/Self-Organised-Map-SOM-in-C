@@ -39,3 +39,7 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
 //in an array
 char *find_frequency(char **string_array, char **string_to_find, int size_string_array, int size_string_to_find);
 
+
+//Function use to calculate euclidian distance of single number
+double dist_eucli_single(double number1, double number2);
+

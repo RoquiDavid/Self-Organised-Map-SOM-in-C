@@ -3,15 +3,23 @@
 #include <string.h>
 #include <math.h>
 #include "function.h"
+#include <unistd.h>
 
 
 
-//Function use to calculate euclidian distance
+//Function use to calculate euclidian distance of a vectors
 double dist_eucli(double *vector1, double *vector2, int size){
     double dist = 0;
     for(int i = 0; i < size; i ++){
         dist+= pow((vector2[i] - vector1[i]),2);
     }
+    return sqrt(dist);
+
+}
+//Function use to calculate euclidian distance of single number
+double dist_eucli_single(double number1, double number2){
+    double dist = pow((number1 - number1),2);
+    
     return sqrt(dist);
 
 }
@@ -108,7 +116,13 @@ void swap(vec *index1, vec *index2){
     *index2 = temp;
 }
 
-
+double difference(double *vector1, double *vector2, int size){
+    int diff = 0;
+    for(int i = 0; i < size; i ++){
+        diff = diff + fabs(vector1[i] - vector2[i]);
+    }
+    return diff;
+}
 //Fonction that allow to spread the vector thought the nearest neightbors
 void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *data, int data_size)
 {
@@ -118,8 +132,10 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
     int limit = 3;
     //int nb_ite = round(reseau.taille_voisinnage/4); dans le while && ite < nb_ite
     int ite = 0;
+    int difference = 0;
     while (cpt < reseau.taille_voisinnage )
     {
+        //printf("%d\n",reseau.taille_voisinnage);
         // TOP
         for (int i = col + 1 * perim; i >= col - 1 * perim; i--)
         {
@@ -131,14 +147,16 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
             {   
                 break;
             }
-            for(int j = 1; j < data_size; j++){
-                //printf("%lf",reseau.alpha * abs(reseau.map[i][ligne].weight[j] - data[j]));
-                reseau.map[i][ligne].weight[j] = reseau.map[i][ligne].weight[j] + reseau.alpha * fabs((reseau.map[i][ligne].weight[j] - data[j]));
+            for(int j = 0; j < data_size; j++){
+                reseau.map[i][ligne].weight[j] +=  reseau.alpha *  (data[j]-reseau.map[i][ligne].weight[j]);
+
+                //printf("%lf ",reseau.map[i][ligne].weight[j]);
             }
+            //printf("\n");
 
             cpt++;
         }
-
+        
          // LEFT
         for (int i = ligne - 1 * perim+1 ; i <= ligne + 1 * perim; i++)
         {
@@ -150,11 +168,14 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
             {
                 break;
             }
-
+            
             for(int j = 0; j < data_size; j++){
                 //printf("%lf",reseau.alpha * abs(reseau.map[col][i].weight[j] - data[j]);
-                reseau.map[col][i].weight[j] = reseau.map[col][i].weight[j-1] + reseau.alpha * fabs((reseau.map[col][i].weight[j] - data[j]));
+                reseau.map[col][i].weight[j] += reseau.alpha *  (data[j]-reseau.map[col][i].weight[j]);
+
+                //printf("%lf ",reseau.map[col][i].weight[j]);
             }
+            //printf("\n");
 
             cpt++;
         }
@@ -171,8 +192,10 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
             }
             
             for(int j = 0; j < data_size; j++){
-               reseau.map[i][ligne].weight[j] = reseau.map[i][ligne].weight[j-1] + reseau.alpha * fabs((reseau.map[i][ligne].weight[j] - data[j]));
-               }
+               reseau.map[i][ligne].weight[j] += reseau.alpha *  (data[j]-reseau.map[i][ligne].weight[j]);
+               //printf("%lf ",reseau.map[i][ligne].weight[j]);
+            }
+            //printf("\n");
             cpt++;
 
         }
@@ -187,18 +210,23 @@ void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *
             if (cpt >= reseau.taille_voisinnage)
             {
                 break;
-            }
-
+            }   
+            
             for(int j = 0; j < data_size; j++){
-                reseau.map[col][i].weight[j] = reseau.map[col][i].weight[j] + reseau.alpha * fabs((reseau.map[col][i].weight[j] - data[j]));
-            }
+                reseau.map[col][i].weight[j] += reseau.alpha *  (data[j]-reseau.map[col][i].weight[j]);
+                
+                //printf("%lf ",reseau.map[col][i].weight[j]);
+            }sleep(0.1);
+            //printf("\n");
             cpt++;
         }
+        
         ite++;
         //printf("ite: %d nb_ite: %d", ite, nb_ite);
         perim++;
+        //printf("\n\n\n");
     }
-    printf("alpha: %lf, voisin: %d \n", reseau.alpha, reseau.taille_voisinnage);
+    //printf("alpha: %lf, voisin: %d \n", reseau.alpha, reseau.taille_voisinnage);
 }
 
 //Function that allow to find the number of occurence of a string

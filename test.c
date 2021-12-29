@@ -148,11 +148,11 @@ int main (int argc, char *argv[], char *env[]){
     
     
     fclose(fp);
-    
+    /*
     for(int i = 0; i< finale_nb_lines; i++){
         printf("%s\n", matrix_data[i].etiquette);
     }
-    
+    */
 
     /*
     for( int i = 0; i < finale_nb_lines; i ++){
@@ -425,15 +425,26 @@ for(int i = 0; i < SOM.nb_colonne; i++){
 
 for( int i = 0; i < finale_nb_lines; i ++){
     for(int j = 0; j < SIZE; j ++){
-        printf("%f ",matrix_data[i].v[j]);
+        //printf("%f ",matrix_data[i].v[j]);
     }
-    printf("\n");
+    //printf("\n");
 }
 
 
 
 
+printf("\n Après initialisation: \n");
+for(int i = 0; i < SOM.nb_colonne; i ++){
 
+        for(int j = 0; j < SOM.nb_ligne; j++){
+            
+            for(int k =0; k < SIZE; k++){
+                printf("%lf ",SOM.map[i][j].weight[k]);
+            }
+            
+        printf("\n");
+        }
+}printf("\n\n\n");
 ///////////////////////////////////////////////////////////////////////////////
 //                          NETWORK TRAINING PART                            //
 ///////////////////////////////////////////////////////////////////////////////
@@ -503,7 +514,7 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
     
     
     
-    
+    //printf("epoch %d",epoch);
     // For each data line we calculate the euclidian distance tought all the net node
     for( int num_data_ligne = 0; num_data_ligne < finale_nb_lines; num_data_ligne ++){
 
@@ -560,12 +571,15 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
 
         //Now we iteratate throught the BMU(s) and spread the data to the neightboor
         //tmp_bmu = head;
+
         int cpt_node = 0;
-        int col_bmu;
-        int line_bmu;
+        int col_bmu = 0;
+
+        int line_bmu = 0;
         bmu *current_node = head;
+        
         while(current_node != NULL){
-            //printf("BMU: c: %d, l: %d\n",   current_node->c, current_node->l);
+           // printf("BMU: c: %d, l: %d\n",   current_node->c, current_node->l);
             //printf("ok");
             //We spread until reach 50% of the total node
             //TODO:
@@ -574,17 +588,19 @@ for(epoch = 0; epoch < SOM.nb_iteration; epoch ++){
                 line_bmu = current_node->l;
                 //printf("vois de: %d %d : ",current_node->c,current_node->l);
                 spread(SOM, col_bmu, line_bmu, SOM.nb_colonne,SOM.nb_ligne,(matrix_data[num_data_ligne].v), SIZE);
-                //printf("col_bmu: %d    line_bmu: %d",col_bmu, line_bmu);
+                //printf("%d ", cpt_node);
                         //By thie formula
                         //printf("%d %d\n", col, line);
                         //SOM.map[col][line].weight[i] = SOM.map[col][line].weight[i] * SOM.alpha * dist_eucli(matrix_data[num_data_ligne].v, SOM.map[col][line].weight, SIZE);
                         //SOM.map[col][line].weight[i] = SOM.map[col][line].weight[i] * SOM.alpha * abs((SOM.map[col][line].weight[i] - matrix_data[num_data_ligne].v[i]));
                         //printf("%f ",(double)abs((SOM.map[col][line].weight[i] - matrix_data[num_data_ligne].v[i])));
-
             
+            //printf("cpt %d\n",cpt_node);
+             cpt_node++;
             current_node = current_node->next;
-            cpt_node = 0;
+           
         }
+        cpt = 0;
         min = INFINITY;
     }
 
@@ -603,8 +619,20 @@ for( int i = 0; i < SOM.nb_colonne; i ++){
     }
 }
 */
-printf("12");
+//printf("12");
+printf("\n Après training: \n");
+for(int i = 0; i < SOM.nb_colonne; i ++){
 
+        for(int j = 0; j < SOM.nb_ligne; j++){
+            
+            for(int k =0; k < SIZE; k++){
+                printf("%lf ",SOM.map[i][j].weight[k]);
+            }
+            
+        printf("\n");
+        }
+}
+//printf("\n\n\n");
 ///////////////////////////////////////////////////////////////////////////////
 //                            NETWORK TESTING PART                           //
 ///////////////////////////////////////////////////////////////////////////////
