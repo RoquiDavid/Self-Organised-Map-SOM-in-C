@@ -249,13 +249,13 @@ int malloc_check_dmatrix(double **array){
 
 
 //Function that allow us to initialize the net
-int init_net(net *SOM, int nb_colonne, int nb_ligne, int nb_iteration, int nb_line_data, double *moyenne_data,int vec_size, int zoom, double learning_rate){
+int init_net(net *SOM, int nb_iteration, int nb_line_data, double *moyenne_data,int vec_size, int zoom, double learning_rate){
     // We can go up 4* more we multiply less we zoom in
     SOM->nb_node = 5*sqrt(nb_line_data)*zoom;
 
-    SOM->nb_colonne = nb_colonne;
+    SOM->nb_colonne = SOM->nb_node/10;
 
-    SOM->nb_ligne = nb_ligne;
+    SOM->nb_ligne = 10;
     //printf("%d %d",SOM->nb_colonne, SOM->nb_ligne);
     SOM->alpha = learning_rate;
 
@@ -339,7 +339,6 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
         }
         reseau->alpha = alpha_init * (1-((float)epoch/(float)reseau->nb_iteration));
         
-        //printf("%d", SOM.taille_voisinnage);
         if(epoch>500 && epoch < 1000){
             alpha_init = 0.08;
             reseau->taille_voisinnage = round(0.40 * reseau->nb_node);
@@ -373,10 +372,8 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
                         head->next = NULL;
                         min = reseau->map[num_col][num_ligne].act;
 
-                        //printf("BMU1: c: %d, l: %d\n",   head->c, head->l);
                         linked_empty = 0;
                         continue;
-                        //printf("BMU: c: %d, l: %d\n",   SOM.best_unit->c, SOM.best_unit->l);
                     }
                     //If we find a second bmu we add her to the linked list
                     if(reseau->map[num_col][num_ligne].act == min  && !linked_empty){

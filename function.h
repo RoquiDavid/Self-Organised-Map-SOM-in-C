@@ -48,5 +48,11 @@ int malloc_check_dvec(double *array);
 //Function to check memory allocation of a 2D double array
 int malloc_check_dmatrix(double **array);
 
-int init_net(net *SOM, int nb_colonne, int nb_ligne, int nb_iteration, int nb_line_data, double *moyenne_data,int vec_size, int zoom, double learning_rate);
+//Function to initialize the network
+int init_net(net *SOM, int nb_iteration, int nb_line_data, double *moyenne_data,int vec_size, int zoom, double learning_rate);
 
+//Function to train the network
+void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb_line_data, int vec_size);
+
+//Function to test the network
+void test_net(net *reseau, vec* data, char **flower_label, int nb_data_line, int vec_size);

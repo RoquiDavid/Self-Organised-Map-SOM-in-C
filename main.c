@@ -104,7 +104,7 @@ void myInit(void)
     //Replace the current matrix with the identity matrix
 	glLoadIdentity();
     //define a 2D orthographic projection matrix
-	gluOrtho2D(0.0, 640.0, 0.0, 480.0);
+	gluOrtho2D(0.0, 1080.0, 0.0, 720.0);
 }
 
 int main (int argc, char *argv[], char *env[]){
@@ -113,7 +113,11 @@ int main (int argc, char *argv[], char *env[]){
 //                         DATA INITIALISAITON PART                          //
 ///////////////////////////////////////////////////////////////////////////////
 
-    
+    //We check if all the arguments are setup (4 because we have to take the argv[0] in consideration)
+    if(argc < 4){
+        printf("\nMissing arguments. Arguments are: number_of_iteration, zoom, learning_rate (2000, 1, 0.9 are the basics parameters for good results\n");
+        return 0;
+    }
     FILE *fp = fopen("data/iris.data","r");
 
     char line[256];
@@ -309,10 +313,14 @@ vec_moyenne[1] = moyenne_petal_width;
 vec_moyenne[2] = moyenne_petal_length;
 vec_moyenne[3] = moyenne_sepal_width;
 
+int nb_ite = atoi(argv[1]);
+int zoom = atoi(argv[2]);
+double learning_rate = atof(argv[3]);
+
 
 
 //We initialise each node of the network
-init_net(&SOM, 6, 10, 2000, lines, vec_moyenne, SIZE,1, 0.9);
+init_net(&SOM, nb_ite, lines, vec_moyenne, SIZE, zoom, learning_rate);
 
 
 printf("\n Après initialisation: \n");
@@ -355,7 +363,6 @@ unique_flower[2]= "Iris-setosa";
 
 //Test the network to produce the final result
 test_net(&SOM, matrix_data, unique_flower, lines, SIZE);
-
 //Display the final net
 display_final_result(SOM);
 
