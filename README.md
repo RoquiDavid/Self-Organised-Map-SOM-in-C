@@ -5,5 +5,5 @@ sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
 
 # To compile uses commands listed bellow:
 
-$ make
+$ make <br />
 $ ./main
