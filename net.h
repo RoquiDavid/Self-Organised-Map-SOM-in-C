@@ -2,15 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-//TODO
-// Ajouter un array a node pour faire stat de la fleur stactivant le plus
-//Structure d'un neuronne
+
 typedef struct node{
     double *weight; //Vecteur poid
     double act; //Fonction d'activation (distance euclidienne)
     int id; //Nom de la données (classe de la données)
-    char label;
-    char **stats;
+    char label; //Label of the node
+    char **stats; // Statistical array that give us a better precision
 }node;
 
 //Structure d'une best matching unit

@@ -24,7 +24,7 @@ double min(double *vector_data);
 double max(double *vector_data);
 
 //Function tht generate random vector
-void vec_random(double moyenne, double *weight, int size);
+void vec_random(double *moyenne, double *weight, int size);
 
 //Function that swap two array index
 void swap(vec *index1, vec *index2);
@@ -33,13 +33,20 @@ void swap(vec *index1, vec *index2);
 double randomRange(double min, double max);
 
 //Fonction that allow to spread the vector thought the nearest neightbors
-void spread(net reseau, int col, int ligne, int max_col, int max_ligne, double *data, int data_size);
+void spread(net *reseau, int col, int ligne, int max_col, int max_ligne, double *data, int data_size);
 
 //Function that allow to find the number of occurence of a string
 //in an array
 char *find_frequency(char **string_array, char **string_to_find, int size_string_array, int size_string_to_find);
 
-
 //Function use to calculate euclidian distance of single number
 double dist_eucli_single(double number1, double number2);
+
+//Function to check memory allocation
+int malloc_check_dvec(double *array);
+
+//Function to check memory allocation of a 2D double array
+int malloc_check_dmatrix(double **array);
+
+int init_net(net *SOM, int nb_colonne, int nb_ligne, int nb_iteration, int nb_line_data, double *moyenne_data,int vec_size, int zoom, double learning_rate);
 
