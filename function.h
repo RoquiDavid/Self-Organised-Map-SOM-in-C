@@ -27,7 +27,7 @@ double max(double *vector_data);
 void vec_random(double *moyenne, double *weight, int size);
 
 //Function that swap two array index
-void swap(vec *index1, vec *index2);
+void swap(int *array_index, int size_array);
 
 //Function that generate random double
 double randomRange(double min, double max);

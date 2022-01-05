@@ -92,19 +92,33 @@ double randomRange(double min, double max)
 void vec_random(double *moyenne, double *weight, int size)
 {
     for (int i = 0; i < size; i++){
-        weight[i] = randomRange(abs(moyenne[i]-0.05), (moyenne[i]+0.05));
+        weight[i] = randomRange(abs(moyenne[i]-0.02), (moyenne[i]+0.06));
     }
 
 }
 
+//Function to initialize array index
+void init_index_array(int *array_index,int size_array)
+{
+    for(int i = 0; i < size_array; i++){
+        array_index[i] = i;
+    }
 
-//Function that swap two array index
-void swap(vec *index1, vec *index2){
-    struct vec temp;
-    temp = *index1;
-    *index1 = *index2;
-    *index2 = temp;
 }
+
+//Functino to swap array index
+void swap(int *array_index, int size_array){
+    int rnd_index;
+    int temp;
+    for(int i = 0; i < size_array; i++){
+        rnd_index = rand() % size_array;
+        temp = array_index[i];
+        array_index[i] = array_index[rnd_index];
+        array_index[rnd_index] = temp;
+    }
+    
+}
+
 
 double difference(double *vector1, double *vector2, int size){
     int diff = 0;
@@ -256,7 +270,7 @@ int init_net(net *SOM, int nb_iteration, int nb_line_data, double *moyenne_data,
     SOM->nb_colonne = SOM->nb_node/10;
 
     SOM->nb_ligne = 10;
-    //printf("%d %d",SOM->nb_colonne, SOM->nb_ligne);
+
     SOM->alpha = learning_rate;
 
     SOM->best_unit = (bmu *)calloc(1,sizeof(bmu));
@@ -332,22 +346,23 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
     //We iteration nb_iteration times
     //We swap the data array
     double alpha_init = reseau->alpha;
+    int *array_index = (int *)calloc(nb_line_data,sizeof(int));
+    init_index_array(array_index, nb_line_data);
     for(epoch = 0; epoch < reseau->nb_iteration; epoch ++){
 
-        for(int i = 0; i < nb_line_data; i++){
-            swap(matrix_data + (rand() % nb_line_data), matrix_data + (rand() % nb_line_data));
-        }
+        swap(array_index, nb_line_data);
+        
         reseau->alpha = alpha_init * (1-((float)epoch/(float)reseau->nb_iteration));
         
-        if(epoch>500 && epoch < 1000){
+        if(epoch>reseau->nb_iteration/4 && epoch < (reseau->nb_iteration/4)*2){
             alpha_init = 0.08;
             reseau->taille_voisinnage = round(0.40 * reseau->nb_node);
         }
-        if(epoch>=1000 && epoch <1500){
+        if(epoch>=(reseau->nb_iteration/4)*2 && epoch < (reseau->nb_iteration/4)*3){
             
             reseau->taille_voisinnage = round(0.29 * reseau->nb_node);
         }
-        if(epoch>=1500 && epoch <2000){
+        if(epoch>=(reseau->nb_iteration/4)*3 && epoch <(reseau->nb_iteration/4)*4){
             
             reseau->taille_voisinnage = 8;
         }
@@ -360,7 +375,7 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
                 
                 for(int num_ligne = 0; num_ligne < reseau->nb_ligne; num_ligne ++){
                     
-                    reseau->map[num_col][num_ligne].act = dist_eucli(matrix_data[num_data_ligne].v, reseau->map[num_col][num_ligne].weight, vec_size);
+                    reseau->map[num_col][num_ligne].act = dist_eucli(matrix_data[array_index[num_data_ligne]].v, reseau->map[num_col][num_ligne].weight, vec_size);
                     
                     //We check if we have find the minimum of the array 
                     //And actualize the bmu
@@ -411,7 +426,7 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
                 col_bmu = current_node->c;
                 line_bmu = current_node->l;
                 //We spread the bmu's weight over his neighbor     
-                spread(reseau, col_bmu, line_bmu, reseau->nb_colonne,reseau->nb_ligne,(matrix_data[num_data_ligne].v), vec_size);
+                spread(reseau, col_bmu, line_bmu, reseau->nb_colonne,reseau->nb_ligne,(matrix_data[array_index[num_data_ligne]].v), vec_size);
                 cpt_node++;
                 current_node = current_node->next;
             }
@@ -426,9 +441,11 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
 //Function that allow us to test the network (after the training)
 void test_net(net *reseau, vec* data, char **flower_label, int nb_data_line, int vec_size){
     double min = INFINITY;
-    for(int i = 0; i < nb_data_line; i++){
-        swap(data + (rand() % nb_data_line), data + (rand() % nb_data_line));
-    }
+
+    int *array_index = (int *)calloc(nb_data_line,sizeof(int));
+    init_index_array(array_index, nb_data_line);
+
+    swap(array_index, nb_data_line);
 
     // For each data line we calculate the euclidian distance tought all the net node
         
@@ -439,11 +456,11 @@ void test_net(net *reseau, vec* data, char **flower_label, int nb_data_line, int
                 
                 for( int num_data_ligne = 0; num_data_ligne < nb_data_line; num_data_ligne ++){
                     
-                    if(dist_eucli(reseau->map[num_col][num_ligne].weight, data[num_data_ligne].v, vec_size) < min){
-                        reseau->map[num_col][num_ligne].stats[num_data_ligne] = data[num_data_ligne].etiquette;
+                    if(dist_eucli(reseau->map[num_col][num_ligne].weight, data[array_index[num_data_ligne]].v, vec_size) < min){
+                        reseau->map[num_col][num_ligne].stats[num_data_ligne] = data[array_index[num_data_ligne]].etiquette;
                     
                     
-                        min = dist_eucli(reseau->map[num_col][num_ligne].weight, data[num_data_ligne].v, vec_size);
+                        min = dist_eucli(reseau->map[num_col][num_ligne].weight, data[array_index[num_data_ligne]].v, vec_size);
                     }
                     
                 }
