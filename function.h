@@ -33,7 +33,7 @@ void swap(int *array_index, int size_array);
 double randomRange(double min, double max);
 
 //Fonction that allow to spread the vector thought the nearest neightbors
-void spread(net *reseau, int col, int ligne, int max_col, int max_ligne, double *data, int data_size);
+void spread(net *reseau, int bmu_col, int bmu_ligne, double *data, int data_size);
 
 //Function that allow to find the number of occurence of a string
 //in an array
@@ -52,7 +52,7 @@ int malloc_check_dmatrix(double **array);
 int init_net(net *SOM, int nb_iteration, int nb_line_data, double *moyenne_data,int vec_size, int zoom, double learning_rate);
 
 //Function to train the network
-void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb_line_data, int vec_size);
+void net_training(net *reseau, int nb_iteration, vec *matrix_data, int nb_line_data, int vec_size);
 
 //Function to test the network
 void test_net(net *reseau, vec* data, char **flower_label, int nb_data_line, int vec_size);

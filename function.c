@@ -5,6 +5,7 @@
 #include "function.h"
 #include <unistd.h>
 #include <GL/glut.h>
+#include <time.h>
 
 //Function use to calculate euclidian distance of a vectors
 double dist_eucli(double *vector1, double *vector2, int size){
@@ -82,9 +83,9 @@ double max(double *vector_data)
 //Function that generate random double
 double randomRange(double min, double max)
 {
-    double random_data;
-    random_data = (double) rand() / ((double) RAND_MAX + 1);
-    return (min + random_data * (max - min));
+    double range = (max - min); 
+    double div = RAND_MAX / range;
+    return min + (rand() / div);
 
 }
 
@@ -93,7 +94,9 @@ void vec_random(double *moyenne, double *weight, int size)
 {
     for (int i = 0; i < size; i++){
         weight[i] = randomRange(abs(moyenne[i]-0.02), (moyenne[i]+0.06));
+        //printf("%lf ", weight[i]);
     }
+    //printf("\n");
 
 }
 
@@ -128,86 +131,40 @@ double difference(double *vector1, double *vector2, int size){
     return diff;
 }
 //Fonction that allow to spread the vector thought the nearest neightbors
-void spread(net *reseau, int col, int ligne, int max_col, int max_ligne, double *data, int data_size)
+void spread(net *reseau, int bmu_col, int bmu_ligne, double *data, int data_size)
 {
+    //Initialisation des bornes inferieures et superieurs
+    int born_sup_c = bmu_col;
+    int born_sup_l = bmu_ligne;
 
-    int cpt = 0;
-    int perim = 1;
-    int ite = 0;
-    while (cpt < reseau->taille_voisinnage )
-    {
-        // TOP
-        for (int i = col + 1 * perim; i >= col - 1 * perim; i--)
-        {
-            if(i<0 || i>=max_col || ligne - 1 * perim <0){
-                continue;
-            }
-            if (cpt >= reseau->taille_voisinnage)
-            {   
-                break;
-            }
-            for(int j = 0; j < data_size; j++){
-                reseau->map[i][ligne].weight[j] +=  reseau->alpha *  (data[j]-reseau->map[i][ligne].weight[j]);
-            }
+    int born_inf_c = bmu_col;
+    int born_inf_l = bmu_ligne;
 
-            cpt++;
+    //On cherche les valeurs des borns inf et supp
+    for(int i = 0; i< reseau->taille_voisinnage; i++){
+
+        if(born_sup_c - 1>=0 ){
+            born_sup_c--;
         }
-        
-         // LEFT
-        for (int i = ligne - 1 * perim+1 ; i <= ligne + 1 * perim; i++)
-        {
-            if(i<0 || i>=max_ligne || col - 1 * perim < 0){
-                continue;
-            }
-            if (cpt >= reseau->taille_voisinnage)
-            {
-                break;
-            }
-            
-            for(int j = 0; j < data_size; j++){
-                reseau->map[col][i].weight[j] += reseau->alpha *  (data[j]-reseau->map[col][i].weight[j]);
-            };
-
-            cpt++;
-        }
-        // BOT
-        for (int i = col - 1 * perim + 1; i <= col + 1 * perim; i++)
-        {
-            if(i<0 || i>=max_col || ligne + 1 * perim >= max_ligne){
-                continue;
-            }
-            if (cpt >= reseau->taille_voisinnage)
-            {
-                break;
-            }
-            
-            for(int j = 0; j < data_size; j++){
-               reseau->map[i][ligne].weight[j] += reseau->alpha *  (data[j]-reseau->map[i][ligne].weight[j]);
-            }
-            cpt++;
-
+        if(born_sup_l - 1 >= 0 ){
+            born_sup_l--;
         }
 
-        //RIGHT
-        for (int i = ligne + 1 * perim - 1; i >= ligne - 1 * perim; i--)
-        {
-            if(i<0 || i>=max_ligne || col + 1 * perim >= max_col){
-                continue;
-            }
-            if (cpt >= reseau->taille_voisinnage)
-            {
-                break;
-            }   
-            
-            for(int j = 0; j < data_size; j++){
-                reseau->map[col][i].weight[j] += reseau->alpha *  (data[j]-reseau->map[col][i].weight[j]);
-                
-            }
-            cpt++;
+        if(born_inf_c + 1 <reseau->nb_colonne ){
+            born_inf_c++;
         }
-        
-        ite++;
-        perim++;
+        if(born_inf_l + 1 <reseau->nb_ligne){
+            born_inf_l++;
+        }
+    }
+    //On parcours le voisinnage dans le perimètres des bornes sup et inf
+    for(int col = born_sup_c; col <= born_inf_c; col++){
+        for(int ligne = born_sup_l; ligne <= born_inf_l; ligne++){
+            for(int j = 0; j < data_size; j++){
+                //On inject le vecteur
+               reseau->map[col][ligne].weight[j] += reseau->alpha *  (data[j] - reseau->map[col][ligne].weight[j]);
+            }
+        }
     }
 }
 
@@ -276,16 +233,22 @@ int init_net(net *SOM, int nb_iteration, int nb_line_data, double *moyenne_data,
     SOM->best_unit = (bmu *)calloc(1,sizeof(bmu));
     if(SOM->best_unit == NULL){
         printf("Memory allocation failed");
-        return 0;
+        exit(EXIT_FAILURE);
     }
     SOM->nb_iteration = nb_iteration;
-
-    SOM->taille_voisinnage = round(0.5 * SOM->nb_node);
+    
+    int voisi = 0;
+    int perimetre = 1;
+    while(voisi <round(0.5 * SOM->nb_node)){
+        voisi += 8*perimetre;
+        perimetre++;
+    }
+    SOM->taille_voisinnage = perimetre;
     
     SOM->map = ( node **)calloc(SOM->nb_colonne,sizeof( node *));
     if(SOM->map == NULL){
         printf("Memory allocation failed");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
     for(int i = 0; i < SOM->nb_colonne; i++)
@@ -293,7 +256,7 @@ int init_net(net *SOM, int nb_iteration, int nb_line_data, double *moyenne_data,
         SOM->map[i] = ( node *)calloc(SOM->nb_ligne,sizeof( node ));
         if(SOM->map[i] == NULL){
             printf("Memory allocation failed");
-            return 0;
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -304,13 +267,18 @@ int init_net(net *SOM, int nb_iteration, int nb_line_data, double *moyenne_data,
         for(int j = 0; j < SOM->nb_ligne; j++){
 
             //Initialize the memory vector
+
             SOM->map[i][j].weight = (double *)calloc(vec_size, sizeof(double));
-    
+            if(SOM->map[i][j].weight == NULL){
+                printf("Memory allocation failed");
+                exit(EXIT_FAILURE);
+            }
+        
+        
             vec_random(moyenne_data, SOM->map[i][j].weight, vec_size);
             for(int k =0; k < vec_size; k++){
-                //printf("%lf ",SOM.map[i][j].weight[k]);
+                //printf("%lf ",SOM->map[i][j].weight[k]);
             }
-            //printf("\n");
             //Normlize the memory vector
             normalize(SOM->map[i][j].weight,vec_size);
             
@@ -320,53 +288,58 @@ int init_net(net *SOM, int nb_iteration, int nb_line_data, double *moyenne_data,
             //Initialize the stats array
             SOM->map[i][j].stats = (char **)calloc(nb_line_data, sizeof(char *));
             
+            if(SOM->map[i][j].stats == NULL){
+                printf("Memory allocation failed");
+                exit(EXIT_FAILURE);
+            }
+            
             cpt ++;
 
         }
     }
+    return 1;
 }
 
 
-void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb_line_data, int vec_size){
+
+void net_training(net *reseau, int nb_iteration, vec *matrix_data, int nb_line_data, int vec_size){
     //State of the iteration
     int epoch = 0;
-    int cpt = 0;
     //The minimum of the euclidian distance thought the net node
     double min = INFINITY;
 
     int linked_empty = 1;
+    //Variable to record the size of the linked_list of BMU(s)
+    int size_linked_list = 0;
 
 
-    
+   
+
+    struct bmu *head = (bmu*)calloc(1,sizeof(bmu));
+    if(head==NULL){
+        printf("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
     //We initialize the head of linked list
     head->c = 0;
     head->l = 0;
     head->next = NULL;
 
+    int ite_reduc = nb_iteration/reseau->taille_voisinnage;
     //We iteration nb_iteration times
     //We swap the data array
     double alpha_init = reseau->alpha;
     int *array_index = (int *)calloc(nb_line_data,sizeof(int));
     init_index_array(array_index, nb_line_data);
-    for(epoch = 0; epoch < reseau->nb_iteration; epoch ++){
-
+    for(epoch = 0; epoch < nb_iteration; epoch ++){
+        //Diminuer tous les phase_ite/taille_rayon_voisinnage
         swap(array_index, nb_line_data);
-        
-        reseau->alpha = alpha_init * (1-((float)epoch/(float)reseau->nb_iteration));
-        
-        if(epoch>reseau->nb_iteration/4 && epoch < (reseau->nb_iteration/4)*2){
-            alpha_init = 0.08;
-            reseau->taille_voisinnage = round(0.40 * reseau->nb_node);
+        reseau->alpha = alpha_init * (1-((float)epoch/(float)nb_iteration));
+
+        if( !(epoch%ite_reduc) && (reseau->taille_voisinnage > 1)){
+            reseau->taille_voisinnage--;
         }
-        if(epoch>=(reseau->nb_iteration/4)*2 && epoch < (reseau->nb_iteration/4)*3){
-            
-            reseau->taille_voisinnage = round(0.29 * reseau->nb_node);
-        }
-        if(epoch>=(reseau->nb_iteration/4)*3 && epoch <(reseau->nb_iteration/4)*4){
-            
-            reseau->taille_voisinnage = 8;
-        }
-        
         // For each data line we calculate the euclidian distance tought all the net node
         for( int num_data_ligne = 0; num_data_ligne < nb_line_data; num_data_ligne ++){
 
@@ -382,11 +355,22 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
                     if(reseau->map[num_col][num_ligne].act < min )
                     {   
                         //If we find a better bmu we "reset" the linked list
+                        //We free the old linked list
+                        while (head != NULL) {
+                            struct bmu *tmp_bmu = head;
+                            head = head->next;
+                            free(tmp_bmu);
+                        }
+                        
+                        
+                        
+
+                        size_linked_list = 1;
+                        head = (bmu*)calloc(1,sizeof(bmu));
                         head->c = num_col;
                         head->l = num_ligne;
                         head->next = NULL;
                         min = reseau->map[num_col][num_ligne].act;
-
                         linked_empty = 0;
                         continue;
                     }
@@ -396,7 +380,7 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
                         bmu *current_node = head;
                         bmu *new_node;
                         while ( current_node != NULL && current_node->next != NULL) {
-                        current_node = current_node->next;
+                            current_node = current_node->next;
                         }
 
                         new_node = (bmu *) malloc(sizeof(bmu));
@@ -404,6 +388,7 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
                         new_node->l = num_ligne;
                         new_node->next= NULL;
                         current_node->next = new_node;
+                        size_linked_list++;
                     }
                     
 
@@ -415,26 +400,24 @@ void net_training(net *reseau, bmu *tmp_bmu, bmu *head, vec *matrix_data, int nb
                 printf("BMU linked list is empty");
             }
 
-            //Now we iteratate throught the BMU(s) and spread the data to the neightboor
-            int cpt_node = 0;
-            int col_bmu = 0;
-
-            int line_bmu = 0;
-            bmu *current_node = head;
+            //Generate a random number for the winner
+            int random_winner = rand() % size_linked_list+1;
+            //The counter of the winner linked list
+            int cpt_current_winner = 1;
             
-            while(current_node != NULL){
-                col_bmu = current_node->c;
-                line_bmu = current_node->l;
-                //We spread the bmu's weight over his neighbor     
-                spread(reseau, col_bmu, line_bmu, reseau->nb_colonne,reseau->nb_ligne,(matrix_data[array_index[num_data_ligne]].v), vec_size);
-                cpt_node++;
+            bmu *current_node = head;
+            srand ( time(NULL) );
+            //We look for the winner for spread
+            while(random_winner != cpt_current_winner){   
                 current_node = current_node->next;
+                cpt_current_winner++;
             }
-            cpt = 0;
+            spread(reseau, current_node->c, current_node->l, (matrix_data[array_index[num_data_ligne]].v), vec_size);
             min = INFINITY;
         }
 
     }
+    
 }
 
 
@@ -448,7 +431,7 @@ void test_net(net *reseau, vec* data, char **flower_label, int nb_data_line, int
     swap(array_index, nb_data_line);
 
     // For each data line we calculate the euclidian distance tought all the net node
-        
+    //Mettre boucle sur num_data_ligne
         for(int num_col = 0; num_col < reseau->nb_colonne; num_col ++){
             
             
@@ -458,8 +441,6 @@ void test_net(net *reseau, vec* data, char **flower_label, int nb_data_line, int
                     
                     if(dist_eucli(reseau->map[num_col][num_ligne].weight, data[array_index[num_data_ligne]].v, vec_size) < min){
                         reseau->map[num_col][num_ligne].stats[num_data_ligne] = data[array_index[num_data_ligne]].etiquette;
-                    
-                    
                         min = dist_eucli(reseau->map[num_col][num_ligne].weight, data[array_index[num_data_ligne]].v, vec_size);
                     }
                     

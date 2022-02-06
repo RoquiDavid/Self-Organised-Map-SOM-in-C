@@ -1,2 +1,2 @@
 test:
-	gcc -o main main.c  -lGL -lGLU -lglut -lm
+	gcc -o som main.c  -Wall -lGL -lGLU -lglut -lm

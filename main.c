@@ -116,10 +116,13 @@ int main (int argc, char *argv[], char *env[]){
     //We check if all the arguments are setup (4 because we have to take the argv[0] in consideration)
     if(argc < 4){
         printf("\nMissing arguments. Arguments are: number_of_iteration, zoom, learning_rate (2000, 1, 0.9 are the basics parameters for good results\n");
-        return 0;
+        exit(EXIT_FAILURE);
     }
     FILE *fp = fopen("data/iris.data","r");
-
+    if (fp == NULL){
+        printf("Fille cannot be open");
+        exit(EXIT_FAILURE);
+    }
     char line[256];
     int ret;
     int lines = 0;
@@ -135,15 +138,9 @@ int main (int argc, char *argv[], char *env[]){
         //take next character from file.
         chr = getc(fp);
     }
-
-    printf("l: %d\n",lines);
     fp = fopen("data/iris.data","r");
+    printf("l: %d\n",lines);
 
-    if (fp == NULL)
-        exit(EXIT_FAILURE);
-
-
-    
     //Vector initialisation
     double *sepal_length = calloc(lines,sizeof(double));
     double *sepal_width = calloc(lines,sizeof(double));
@@ -159,32 +156,32 @@ int main (int argc, char *argv[], char *env[]){
 
     if(!malloc_check_dvec(sepal_length)){
         printf("Memory allocation failed1");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
     if(!malloc_check_dvec(sepal_width)){
         printf("Memory allocation failed2");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
     if(!malloc_check_dvec(petal_length)){
         printf("Memory allocation failed3");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
     if(!malloc_check_dvec(petal_width)){
         printf("Memory allocation failed4");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
     if(class_flower == NULL){
         printf("Memory allocation failed5");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
     if(!malloc_check_dvec(tmp_vector)){
         printf("Memory allocation failed6");
-        return 0;
+        exit(EXIT_FAILURE);
     }
 
     
@@ -195,7 +192,7 @@ int main (int argc, char *argv[], char *env[]){
         class_flower[i] = (char * ) calloc(256,sizeof(char));
         if(class_flower[i] == NULL){
             printf("Memory allocation failed");
-            return 0;
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -207,7 +204,7 @@ int main (int argc, char *argv[], char *env[]){
         matrix_data[i].v = (double * ) calloc(SIZE,sizeof(double));
         if(!malloc_check_dvec (matrix_data[i].v)){
             printf("Memory allocation failed");
-            return 0;
+            exit(EXIT_FAILURE);
         }
     }
     char tmp [256];
@@ -217,7 +214,7 @@ int main (int argc, char *argv[], char *env[]){
     int k_pos = 0;
     
     
-    while ((ret) = fscanf(fp," %s ", line)) {
+    while ((ret = fscanf(fp," %s ", line))) {
 
         if(ret == EOF){
             break;
@@ -278,7 +275,6 @@ for( int i = 0; i < lines; i ++){
     
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //                         NETWORK INITIALISAITON PART                       //
 ///////////////////////////////////////////////////////////////////////////////
@@ -293,18 +289,11 @@ double moyenne_sepal_length = moyenne(sepal_length, lines);
 double moyenne_sepal_width = moyenne(sepal_width, lines);
 double moyenne_petal_width = moyenne(petal_width, lines);
 
-
-
 free(sepal_length);
 free(sepal_width);
 free(petal_length);
 free(petal_width);
 
-
-printf("moyenne_sepal_length: %f \n",moyenne_sepal_length);
-printf("moyenne_sepal_width: %f \n",moyenne_sepal_width);
-printf("moyenne_petal_length: %f \n",moyenne_petal_length);
-printf("moyenne_petal_width: %f \n",moyenne_petal_width);
 
 //Mean vector
 double *vec_moyenne = (double *)calloc(SIZE,sizeof(double));
@@ -313,11 +302,13 @@ vec_moyenne[1] = moyenne_petal_width;
 vec_moyenne[2] = moyenne_petal_length;
 vec_moyenne[3] = moyenne_sepal_width;
 
+printf("moyenne: %lf, %lf, %lf, %lf",vec_moyenne[0], vec_moyenne[1], vec_moyenne[2],  vec_moyenne[3]);
+
 int nb_ite = atoi(argv[1]);
 int zoom = atoi(argv[2]);
 double learning_rate = atof(argv[3]);
 
-
+srand (time ( NULL));
 
 //We initialise each node of the network
 init_net(&SOM, nb_ite, lines, vec_moyenne, SIZE, zoom, learning_rate);
@@ -332,22 +323,12 @@ display_map(SOM,SIZE);
 ///////////////////////////////////////////////////////////////////////////////
 
 
-//Memory allocation for the linked lists of the bmus
-struct bmu *tmp_bmu = (bmu*)calloc(1,sizeof(bmu));
-if(tmp_bmu==NULL){
-    printf("Memory allocation failed");
-    return 0;
-}
 
-struct bmu *head = (bmu*)calloc(1,sizeof(bmu));
-if(head==NULL){
-    printf("Memory allocation failed");
-    return 0;
-}
 
 //Call the training function of the map
-net_training(&SOM, tmp_bmu, head, matrix_data, lines, SIZE);
+net_training(&SOM, 500 ,matrix_data, lines, SIZE);
 
+net_training(&SOM, 1500, matrix_data, lines, SIZE);
 printf("\n Après training: \n");
 display_map(SOM,SIZE);
 
@@ -357,14 +338,14 @@ display_map(SOM,SIZE);
 
 //Array initialization ofr string to find
 char **unique_flower = (char **)calloc(3,sizeof(char *));
+
 unique_flower[0]= "Iris-versicolor";
 unique_flower[1]= "Iris-virginica";
 unique_flower[2]= "Iris-setosa";
 
 //Test the network to produce the final result
 test_net(&SOM, matrix_data, unique_flower, lines, SIZE);
-//Display the final net
-display_final_result(SOM);
+
 
 
 //Initialize glut library
@@ -388,8 +369,6 @@ glutMainLoop();
 
 //Free the memory
 free(matrix_data);
-free(head);
-free(tmp_bmu);
 free(vec_moyenne);
 free(unique_flower);
 
